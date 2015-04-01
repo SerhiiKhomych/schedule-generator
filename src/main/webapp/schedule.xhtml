@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+<h:head></h:head>
+<ui:composition template="title.xhtml">
+    <ui:define name="content">
+        <h:form>
+            <p:growl id="growl" />
+
+            <div align="center">
+                <p:commandButton value="Згенерувати розклад"
+                                 onclick="PF('progressBar').start();PF('generateButton').disable();"
+                                 widgetVar="generateButton"
+                                 actionListener="#{scheduleController.generateSchedule}"/>
+
+                <p:commandButton value="Експорт в Excel"
+                                 disabled="true"
+                                 onclick="window.location.href=
+                                    window.location.pathname.replace(/[\\\/][^\\\/]*$/, '')+'#{scheduleController.filePath}'"
+                                 widgetVar="exportButton"
+                        />
+            </div>
+            <br></br>
+
+            <p:progressBar widgetVar="progressBar"
+                           ajax="true"
+                           value="#{scheduleController.progress}"
+                           labelTemplate="{value}%"
+                           styleClass="animated">
+
+                <p:ajax event="complete"
+                        listener="#{scheduleController.onComplete}"
+                        update="growl"
+                        oncomplete="PF('generateButton').enable();
+                                    PF('exportButton').enable();"/>
+            </p:progressBar>
+            <br></br>
+
+            <p:accordionPanel>
+                <p:tab title="Загальна інформація">
+                    <h:panelGrid columns="2" cellpadding="10">
+                        <p:graphicImage name="/images/info.png" height="150" width="150"/>
+                        <h:outputText value="Дана програма призначена для генерування розкладу у виші. Для початку роботи потрібно заповнити всю необхідну інформацію для складання розкладу.
+                                             Для переходу між сторінками використовуйте горизонтальне меню, що знаходиться внизу сторінки. На кожній вкладці можна додати, змінити або видалити
+                                             відповідну сутність. На вкладках \'Групи'\, \'Викладачі'\ та \'Аудиторії'\ можна внести інформації про зайнятість аудиторій, побажання студентів
+                                             та викладачів. Вкладка \'Потоки\' містить інформацію про пари які будуть додані в розклад та групи на відповідній парі. Згенерувати розклад та
+                                             завантажити його у вигляді excel-файлу можна на головній сторінці, натисунвши на відповідну кнокпу. Статус процесу генерації буде відображатись на
+                                             головній сторінці після початку процесу генерації." />
+                    </h:panelGrid>
+                </p:tab>
+                <p:tab title="Зворотній зв'язок">
+                    <h:panelGrid columns="2" cellpadding="10">
+                        <p:barcode value="https://github.com/SerhiiKhomych/schedule-generator"
+                                   type="qr" height="150" width="150"/>
+                        <h:outputLabel>
+                            <h:outputText value="Для перегляду документації та вихідного коду - перейдіть за "/>
+                            <h:outputLink value="https://github.com/SerhiiKhomych/schedule-generator">
+                                <h:outputText value="посиланням" />
+                            </h:outputLink>
+                            <h:outputText value=" або скористайтесь QR-кодом. Питання та знайдені помилки надсилайте на "/>
+                            <h:outputLink value="mailto:fcst@meta.ua">
+                                <f:param name="subject" value="Problem&nbsp;with&nbsp;schedule-generator&nbsp;application"/>
+                                <f:param name="body" value="Hi,&nbsp;I&nbsp;have&nbsp;a&nbsp;problem&nbsp;with&nbsp;your&nbsp;application.&nbsp;Details..." />
+                                <h:outputText value="почту" />
+                            </h:outputLink>
+                        </h:outputLabel>
+                    </h:panelGrid>
+                </p:tab>
+            </p:accordionPanel>
+
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

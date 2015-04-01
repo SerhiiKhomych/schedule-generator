@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+
+<ui:composition template="title.xhtml">
+    <ui:define name="content">
+        <h:form id="form">
+            <p:growl id="msgs" showDetail="true"/>
+
+            <div align="center">
+                <p:commandButton value="Додати потік" icon="ui-icon-extlink" type="button" onclick="PF('addStream').show();" />
+            </div>
+            <br></br>
+
+            <p:dialog header="Заповніть вказані поля" widgetVar="addStream" modal="true" minHeight="40">
+                <p:panelGrid columns="2" >
+                    <h:outputLabel value="Викладач: " />
+                    <p:selectOneMenu id="teacherId" value="#{streamController.stream.teacher}" style="width:340px" converter="teacherConverter">
+                        <c:forEach var="teacher" items="#{teacherController.teachers}">
+                            <f:selectItem itemLabel="#{teacher.fullName}" itemValue="#{teacher}" />
+                        </c:forEach>
+                    </p:selectOneMenu>
+
+                    <h:outputLabel value="Предмет: " />
+                    <p:selectOneMenu id="subjectId" value="#{streamController.stream.subject}" style="width:340px" converter="subjectConverter">
+                        <c:forEach var="subject" items="#{subjectController.subjects}">
+                            <f:selectItem itemLabel='#{subject.name}(#{subject.subjectType.label})' itemValue="#{subject}"/>
+                        </c:forEach>
+                    </p:selectOneMenu>
+
+                    <h:outputLabel value="Навантаження: " />
+                    <p:inputText value="#{streamController.stream.hours}" style="width:330px"/>
+                    <p:commandButton value="Додати потік" actionListener="#{streamController.addRow(streamController.stream)}" update=":form"/>
+                </p:panelGrid>
+            </p:dialog>
+
+            <p:dataTable var="stream" value="#{streamController.streamsWithTeacherAndSubject}"
+                 sortBy="#{stream.id}"
+                 editable="true"
+                 resizableColumns="true"
+                 style="margin-bottom:20px"
+                 rows="10"
+                 paginator="true"
+                 paginatorPosition="bottom"
+                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                 rowsPerPageTemplate="10,20,50">
+
+                <p:ajax event="rowEdit" listener="#{streamController.onRowEdit}" update=":form:msgs" />
+                <p:ajax event="rowEditCancel" listener="#{streamController.onRowCancel}" update=":form:msgs" />
+                <p:ajax event="rowToggle" listener="#{streamController.onRowToggle}" update=":form:msgs" />
+
+                <p:column style="width:16px">
+                    <p:rowToggler />
+                </p:column>
+
+                <p:column headerText="Ім'я викладача" sortBy="#{stream.teacher.fullName}" filterBy="#{stream.teacher.fullName}" filterMatchMode="contains">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{stream.teacher.fullName}" /></f:facet>
+                        <f:facet name="input">
+                            <h:selectOneMenu value="#{stream.teacher}" style="width:100%" converter="teacherConverter">
+                                <f:selectItems value="#{teacherController.teachers}" var="teacher" itemLabel="#{teacher.fullName}" itemValue="#{teacher}" />
+                            </h:selectOneMenu>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+
+                <p:column headerText="Назва предмету" sortBy="#{stream.subject.name}" filterBy="#{stream.subject.name}" filterMatchMode="contains">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value='#{stream.subject.name}(#{stream.subject.subjectType.label})' /></f:facet>
+                        <f:facet name="input">
+                            <h:selectOneMenu value="#{subject}" style="width:100%" converter="subjectConverter">
+                                <f:selectItems value="#{subjectController.subjects}" var="subject" itemLabel='#{subject.name}(#{subject.subjectType.label})' itemValue="#{subject}" />
+                            </h:selectOneMenu>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+
+                <p:column headerText="Навантаження" sortBy="#{stream.hours}" filterBy="#{stream.hours}" filterMatchMode="contains">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{stream.hours}" /></f:facet>
+                        <f:facet name="input"><p:inputText id="hours" value="#{stream.hours}" style="width:100%"/></f:facet>
+                    </p:cellEditor>
+                </p:column>
+
+                <p:rowExpansion>
+                    <p:pickList id="pickList"
+                        value="#{stream.dualListGroups}"
+                        var="group"
+                        itemLabel='#{group.name}(#{group.studyYear.label})'
+                        itemValue="#{group}"
+                        converter="groupConverter">
+                        <f:facet name="targetCaption">Не вибрані групи</f:facet>
+                        <f:facet name="sourceCaption">Вибрані групи</f:facet>
+                    </p:pickList>
+                    <p:commandButton id="pickListSubmit" value="Змінити групи" actionListener="#{streamController.updateGroups(stream)}" style="margin-top:5px" update=":form:msgs"/>
+                </p:rowExpansion>
+
+                <p:column style="width:32px">
+                    <p:rowEditor />
+                </p:column>
+            </p:dataTable>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

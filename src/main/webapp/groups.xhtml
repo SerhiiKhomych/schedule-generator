@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+<h:head></h:head>
+
+<ui:composition template="title.xhtml">
+    <ui:define name="content">
+        <h:form id="form">
+            <h:outputStylesheet name="css/desire_window_style.css"/>
+            <p:growl id="msgs" showDetail="true"/>
+
+            <div align="center">
+                <p:commandButton value="Додати групу" icon="ui-icon-extlink" type="button" onclick="PF('addGroup').show();" />
+            </div>
+            <br></br>
+
+            <p:dialog header="Заповніть вказані поля" widgetVar="addGroup" modal="true" minHeight="40">
+                <p:panelGrid columns="2" >
+                    <h:outputLabel value="Назва: " />
+                    <p:inputText  value="#{groupController.group.name}"/>
+                    <h:outputLabel value="Кількість студентів: " />
+                    <p:inputText value="#{groupController.group.quantity}"/>
+                    <h:outputLabel value="Кафедра: " />
+                    <p:selectOneMenu id="facultyId" value="#{groupController.group.faculty}" style="width:190px" converter="facultyConverter">
+                        <c:forEach var="faculty" items="#{groupController.faculties}">
+                            <f:selectItem itemLabel="#{faculty.shortName}" itemValue="#{faculty}" />
+                        </c:forEach>
+                    </p:selectOneMenu>
+                    <h:outputLabel value="Курс: " />
+                    <p:selectOneMenu id="studyYearId" value="#{groupController.group.studyYear}" style="width:190px">
+                        <c:forEach var="studyYear" items="#{groupController.studyYears}">
+                            <f:selectItem itemLabel="#{studyYear.label}" itemValue="#{studyYear}" />
+                        </c:forEach>
+                    </p:selectOneMenu>
+                    <p:commandButton value="Додати групу" actionListener="#{groupController.addRow(groupController.group)}" update=":form"/>
+                </p:panelGrid>
+            </p:dialog>
+
+            <p:dataTable var="group" value="#{groupController.groupsWithFaculties}"
+                 sortBy="#{group.id}"
+                 editable="true"
+                 resizableColumns="true"
+                 style="margin-bottom:20px"
+                 rows="10"
+                 paginator="true"
+                 paginatorPosition="bottom"
+                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                 rowsPerPageTemplate="10,20,50">
+
+                    <p:ajax event="rowEdit" listener="#{groupController.onRowEdit}" update=":form:msgs" />
+                    <p:ajax event="rowEditCancel" listener="#{groupController.onRowCancel}" update=":form:msgs" />
+                    <p:ajax event="rowToggle" listener="#{groupController.onRowToggle}" update=":form:msgs" />
+
+                <p:column style="width:16px">
+                        <p:rowToggler />
+                    </p:column>
+
+                    <p:column headerText="Назва" sortBy="#{group.name}" filterBy="#{group.name}" filterMatchMode="contains">
+                        <p:cellEditor>
+                            <f:facet name="output"><h:outputText value="#{group.name}" /></f:facet>
+                            <f:facet name="input"><p:inputText id="shortName" value="#{group.name}" style="width:100%"/></f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Кількість студентів" sortBy="#{group.quantity}" filterBy="#{group.quantity}" filterMatchMode="contains">
+                        <p:cellEditor>
+                            <f:facet name="output"><h:outputText value="#{group.quantity}" /></f:facet>
+                            <f:facet name="input"><p:inputText id="quantity" value="#{group.quantity}" style="width:100%"/></f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Кафедра" sortBy="#{group.faculty.shortName}" filterBy="#{group.faculty.shortName}" filterMatchMode="contains">
+                        <p:cellEditor>
+                            <f:facet name="output"><h:outputText value="#{group.faculty.shortName}" /></f:facet>
+                            <f:facet name="input">
+                                <h:selectOneMenu value="#{group.faculty}" style="width:100%" converter="facultyConverter">
+                                    <f:selectItems value="#{groupController.faculties}" var="faculty" itemLabel="#{faculty.shortName}" itemValue="#{faculty}" />
+                                </h:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Курс" sortBy="#{group.studyYear}" filterBy="#{group.studyYear}" filterMatchMode="contains">
+                        <p:cellEditor>
+                            <f:facet name="output"><h:outputText value="#{group.studyYear.label}" /></f:facet>
+                            <f:facet name="input">
+                                <h:selectOneMenu value="#{group.studyYear}" style="width:100%">
+                                    <f:selectItems value="#{groupController.studyYears}" var="studyYear" itemLabel="#{studyYear.label}" itemValue="#{studyYear}" />
+                                </h:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:rowExpansion>
+                        <p:pickList id="pickList"
+                            value="#{group.dualListDesires}"
+                            var="desire"
+                            itemLabel='#{desire.dayOfWeek.label}, #{desire.dayOfWeek.weekType}(#{desire.coupleNumber.startDate} - #{desire.coupleNumber.endDate})'
+                            itemValue="#{desire}"
+                            converter="desireConverter">
+                                <f:facet name="targetCaption">Не бажає</f:facet>
+                                <f:facet name="sourceCaption">Бажає</f:facet>
+                        </p:pickList>
+                        <p:commandButton id="pickListSubmit" value="Змінити побажання" actionListener="#{groupController.updateDesires(group)}" style="margin-top:5px" update=":form:msgs"/>
+                    </p:rowExpansion>
+
+                    <p:column style="width:32px">
+                        <p:rowEditor />
+                    </p:column>
+            </p:dataTable>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

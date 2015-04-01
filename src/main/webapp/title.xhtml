@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head></h:head>
+<h:outputStylesheet name="css/basic_style.css"/>
+<body>
+    <div align="center" class="shadowtext">
+        <h1>Генератор розкладу</h1>
+    </div>
+
+     <ui:insert name="content"/>
+
+    <p:dock position="bottom" >
+        <p:menuitem value="Факультети"  icon="/resources/images/books.jpg" url="/departments.xhtml"/>
+        <p:menuitem value="Кафедри" icon="/resources/images/images.jpg" url="/faculties.xhtml"/>
+        <p:menuitem value="Групи" icon="/resources/images/2007-BBB-icon.jpg" url="/groups.xhtml"/>
+        <p:menuitem value="Викладачі" icon="/resources/images/Lee_Entertainment_Book_Logo.jpg" url="/teachers.xhtml"/>
+        <p:menuitem value="Предмети" icon="/resources/images/book.jpg" url="/subjects.xhtml"/>
+        <p:menuitem value="Корпуси" icon="/resources/images/gI_amblogo.png.jpg" url="/corpses.xhtml"/>
+        <p:menuitem value="Аудиторії" icon="/resources/images/library_book.jpg" url="/classrooms.xhtml"/>
+        <p:menuitem value="Потоки" icon="/resources/images/avatar.org.png" url="/streams.xhtml"/>
+        <p:menuitem value="Розклад" icon="/resources/images/excel.jpg" url="/schedule.xhtml"/>
+    </p:dock>
+</body>
+</html>

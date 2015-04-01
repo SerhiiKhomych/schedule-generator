@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+<h:head></h:head>
+
+<ui:composition template="title.xhtml">
+    <ui:define name="content">
+        <h:form id="form">
+            <p:growl id="msgs" showDetail="true"/>
+
+            <div align="center">
+                <p:commandButton value="Додати кафедру" icon="ui-icon-extlink" type="button" onclick="PF('addFaculty').show();" />
+            </div>
+            <br></br>
+
+            <p:dialog header="Заповніть вказані поля" widgetVar="addFaculty" modal="true" minHeight="40">
+                <p:panelGrid columns="2" >
+                    <h:outputLabel value="Коротка назва: " />
+                    <p:inputText  value="#{facultyController.faculty.shortName}"/>
+                    <h:outputLabel value="Повна назва: " />
+                    <p:inputText value="#{facultyController.faculty.longName}"/>
+                    <h:outputLabel value="Факультет: " />
+                    <p:selectOneMenu id="console" value="#{facultyController.faculty.department}" style="width:190px" converter="departmentConverter">
+                        <c:forEach var="department" items="#{departmentController.departments}">
+                            <f:selectItem itemLabel="#{department.shortName}" itemValue="#{department}" />
+                        </c:forEach>
+                    </p:selectOneMenu>
+                    <p:commandButton value="Додати кафедру" actionListener="#{facultyController.addRow(facultyController.faculty)}" update=":form"/>
+                </p:panelGrid>
+            </p:dialog>
+
+            <p:dataTable var="faculty" value="#{facultyController.facultiesWithDepartments}"
+                 sortBy="#{faculty.id}"
+                 editable="true"
+                 resizableColumns="true"
+                 style="margin-bottom:20px"
+                 rows="10"
+                 paginator="true"
+                 paginatorPosition="bottom"
+                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                 rowsPerPageTemplate="10,20,50">
+
+                    <p:ajax event="rowEdit" listener="#{facultyController.onRowEdit}" update=":form:msgs" />
+                    <p:ajax event="rowEditCancel" listener="#{facultyController.onRowCancel}" update=":form:msgs" />
+
+                    <p:column headerText="Повна назва" sortBy="#{faculty.longName}" filterBy="#{faculty.longName}" filterMatchMode="contains">
+                        <p:cellEditor>
+                            <f:facet name="output"><h:outputText value="#{faculty.longName}" /></f:facet>
+                            <f:facet name="input"><p:inputText id="longName" value="#{faculty.longName}" style="width:100%"/></f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Коротка назва" sortBy="#{faculty.shortName}" filterBy="#{faculty.shortName}" filterMatchMode="contains">
+                        <p:cellEditor>
+                            <f:facet name="output"><h:outputText value="#{faculty.shortName}" /></f:facet>
+                            <f:facet name="input"><p:inputText id="shortName" value="#{faculty.shortName}" style="width:100%"/></f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Кафедра" sortBy="#{faculty.department.shortName}" filterBy="#{faculty.department.shortName}" filterMatchMode="contains">
+                        <p:cellEditor>
+                            <f:facet name="output"><h:outputText value="#{faculty.department.shortName}" /></f:facet>
+                            <f:facet name="input">
+                                <h:selectOneMenu value="#{faculty.department}" style="width:100%" converter="departmentConverter">
+                                    <f:selectItems value="#{departmentController.departments}" var="department" itemLabel="#{department.shortName}" itemValue="#{department}" />
+                                </h:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column style="width:32px">
+                        <p:rowEditor />
+                    </p:column>
+            </p:dataTable>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

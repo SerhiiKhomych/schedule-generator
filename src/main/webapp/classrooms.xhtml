@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+<h:head></h:head>
+
+<ui:composition template="title.xhtml">
+    <ui:define name="content">
+        <h:form id="form">
+            <h:outputStylesheet name="css/desire_window_style.css"/>
+            <p:growl id="msgs" showDetail="true"/>
+
+            <div align="center">
+                <p:commandButton value="Додати аудиторію" icon="ui-icon-extlink" type="button" onclick="PF('addClassroom').show();" />
+            </div>
+            <br></br>
+
+            <p:dialog header="Заповніть вказані поля" widgetVar="addClassroom" modal="true" minHeight="40">
+                <p:panelGrid columns="2" >
+                    <h:outputLabel value="Назва: " />
+                    <p:inputText  value="#{classroomController.classroom.name}"/>
+                    <h:outputLabel value="Вмістимість: " />
+                    <p:inputText value="#{classroomController.classroom.seats}"/>
+                    <h:outputLabel value="Тип аудиторії: " />
+                    <p:selectOneMenu id="classroomTypeId" value="#{classroomController.classroom.subjectType}" style="width:190px">
+                        <c:forEach var="classroomType" items="#{classroomController.subjectTypes}">
+                            <f:selectItem itemLabel="#{classroomType.label}" itemValue="#{classroomType}" />
+                        </c:forEach>
+                    </p:selectOneMenu>
+                    <h:outputLabel value="Корпус: " />
+                    <p:selectOneMenu id="corpsId" value="#{classroomController.classroom.corps}" style="width:190px" converter="corpsConverter">
+                        <c:forEach var="corpses" items="#{corpsController.corpses}">
+                            <f:selectItem itemLabel="#{corpses.name}" itemValue="#{corpses}" />
+                        </c:forEach>
+                    </p:selectOneMenu>
+                    <p:commandButton value="Додати аудиторію" actionListener="#{classroomController.addRow(classroomController.classroom)}" update=":form"/>
+                </p:panelGrid>
+            </p:dialog>
+
+            <p:dataTable var="classroom" value="#{classroomController.classroomsWithCorpses}"
+                         sortBy="#{classroom.id}"
+                         editable="true"
+                         resizableColumns="true"
+                         style="margin-bottom:20px"
+                         rows="10"
+                         paginator="true"
+                         paginatorPosition="bottom"
+                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         rowsPerPageTemplate="10,20,50">
+
+                <p:ajax event="rowEdit" listener="#{classroomController.onRowEdit}" update=":form:msgs" />
+                <p:ajax event="rowEditCancel" listener="#{classroomController.onRowCancel}" update=":form:msgs" />
+                <p:ajax event="rowToggle" listener="#{classroomController.onRowToggle}" update=":form:msgs" />
+
+                <p:column style="width:16px">
+                    <p:rowToggler />
+                </p:column>
+
+                <p:column headerText="Назва" sortBy="#{classroom.name}" filterBy="#{classroom.name}" filterMatchMode="contains">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{classroom.name}" /></f:facet>
+                        <f:facet name="input"><p:inputText id="name" value="#{classroom.name}" style="width:100%"/></f:facet>
+                    </p:cellEditor>
+                </p:column>
+
+                <p:column headerText="Вмістимість" sortBy="#{classroom.seats}" filterBy="#{classroom.seats}" filterMatchMode="contains">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{classroom.seats}" /></f:facet>
+                        <f:facet name="input"><p:inputText id="seats" value="#{classroom.seats}" style="width:100%"/></f:facet>
+                    </p:cellEditor>
+                </p:column>
+
+                <p:column headerText="Тип аудиторії" sortBy="#{classroom.subjectType}" filterBy="#{classroom.subjectType}" filterMatchMode="contains">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{classroom.subjectType.label}" /></f:facet>
+                        <f:facet name="input">
+                            <h:selectOneMenu value="#{classroom.subjectType}" style="width:100%">
+                                <f:selectItems value="#{classroomController.subjectTypes}" var="subjectType" itemLabel="#{subjectType.label}" itemValue="#{subjectType}" />
+                            </h:selectOneMenu>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+
+                <p:column headerText="Корпус" sortBy="#{classroom.corps.name}" filterBy="#{classroom.corps.name}" filterMatchMode="contains">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{classroom.corps.name}" /></f:facet>
+                        <f:facet name="input">
+                            <h:selectOneMenu value="#{classroom.corps}" style="width:100%" converter="corpsConverter">
+                                <f:selectItems value="#{corpsController.corpses}" var="coprs" itemLabel="#{coprs.name}" itemValue="#{coprs}" />
+                            </h:selectOneMenu>
+                        </f:facet>
+                    </p:cellEditor>
+                </p:column>
+
+                <p:rowExpansion>
+                    <p:pickList id="pickList"
+                                value="#{classroom.dualListDesires}"
+                                var="desire"
+                                itemLabel='#{desire.dayOfWeek.label}, #{desire.dayOfWeek.weekType}(#{desire.coupleNumber.startDate} - #{desire.coupleNumber.endDate})'
+                                itemValue="#{desire}"
+                                converter="desireConverter">
+                        <f:facet name="targetCaption">Зайнята</f:facet>
+                        <f:facet name="sourceCaption">Вільна</f:facet>
+                    </p:pickList>
+                    <p:commandButton id="pickListSubmit" value="Змінити побажання" actionListener="#{classroomController.updateDesires(classroom)}" style="margin-top:5px" update=":form:msgs"/>
+                </p:rowExpansion>
+
+                <p:column style="width:32px">
+                    <p:rowEditor />
+                </p:column>
+            </p:dataTable>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>
